@@ -1,26 +1,53 @@
+import { useState, useEffect } from "react";
+import Spinner from "../components/Spinner";
+import ErrorMessage from "../components/ErrorMessage";
+
 function Projects() {
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("https://api.github.com/users/24it036-ai/repos")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch repositories");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setRepos(data);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorMessage message={error} />;
+
   return (
-    <div className="container">
+    <div>
+      <h1>My GitHub Repositories</h1>
 
-      <div className="card">
+      {repos.map((repo) => (
+        <div key={repo.id}>
+          <h3>{repo.name}</h3>
 
-        <h1>📂 My Projects</h1>
+          <a
+            href={repo.html_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {repo.html_url}
+          </a>
 
-        <h3>1️⃣ Student Portfolio Website</h3>
-        <p>Portfolio developed using React and Vite.</p>
-
-        <hr />
-
-        <h3>2️⃣ AI Smart Complaint System</h3>
-        <p>AI-based civic complaint management project.</p>
-
-        <hr />
-
-        <h3>3️⃣ Data Preprocessing Pipeline</h3>
-        <p>Python project for cleaning and preprocessing datasets.</p>
-
-      </div>
-
+          <hr />
+        </div>
+      ))}
     </div>
   );
 }
